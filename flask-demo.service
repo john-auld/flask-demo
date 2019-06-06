@@ -1,0 +1,34 @@
+[Unit]
+Description = flask demo showing use of gunicorn within a virtualenv
+
+After    = syslog.target
+Requires = network.target
+
+[Service]
+Type = simple
+User = jxa
+
+# system sandbox options 
+PrivateTmp       = true
+ProtectSystem    = full
+# ReadWritePaths = /add/if/required
+
+RuntimeDirectory     = flask-demo
+RuntimeDirectoryMode = 0755
+WorkingDirectory     = /home/jxa/src/python/flask
+
+ExecStart = \
+    /home/jxa/src/python/flask/venv/bin/python \
+    /home/jxa/src/python/flask/venv/bin/gunicorn \
+        demo:app \
+        --bind 127.0.0.1:8000 \
+        -w 1 \
+        --pid /run/flask-demo/flask-demo.pid
+
+ExecStop   = /bin/kill -s TERM $MAINPID
+ExecReload = /bin/kill -s HUP $MAINPID
+
+Restart = on-abort
+
+[Install]
+WantedBy = multi-user.target
